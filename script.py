@@ -16,8 +16,7 @@ def text_processing():
 
         train_docs = list(filter(lambda doc: doc.startswith("train"),
                             category_docs)) 
-        test_docs = list(filter(lambda doc: doc.startswith("test"),
-                        category_docs))
+        
         
         # training set
         main_train = []
@@ -28,14 +27,9 @@ def text_processing():
             main_train += stemmer
         
         # test set
-        main_test = []
-        for test in test_docs:
-            raw = reuters.raw(test)
-            tokens = word_tokenize(raw)            
-            stemmer = [porter.stem(t) for t in tokens]
-            main_test += stemmer
+      
 
-        bow.append({'categoria': c, 'treinamento': main_train, 'teste': main_test})
+        bow.append({'categoria': c, 'treinamento': main_train})
         
     return bow
 

@@ -1,3 +1,6 @@
+import nltk
+from nltk import word_tokenize
+from nltk.corpus import reuters
 import script
 from script import text_processing
 
@@ -19,8 +22,8 @@ def count_words():
 	
 	return result
 
-def naive_bayes(text):
-	count = count_words()
+def naive_bayes(text,count):
+	#print(text)
 	
 	result = []
 	for c in count:
@@ -30,9 +33,32 @@ def naive_bayes(text):
 				prob_c *= (c["words"][word] + 1) / (c["qtde"] + c["qtde_tokens"])
 			else:
 				prob_c *= 1 / (c["qtde"] + c["qtde_tokens"])
+				
 		
 		result.append({"categoria": c["categoria"], "probabilidade": prob_c})
 
 	print(result)
+
+
+def main():
+	count = count_words()
+	porter = nltk.PorterStemmer()
+	categories = ["corn"]
+
+	for c in categories:
+		category_docs = reuters.fileids(c)
+		test_docs = list(filter(lambda doc: doc.startswith("test"),category_docs))
+		
+		stemmer = []
+		main_test = []
+		
+		raw = reuters.raw(test_docs[0])
+		porter = nltk.PorterStemmer()
+		tokens = word_tokenize(raw)
+		stemmer = [porter.stem(t)for t in tokens]
+		naive_bayes(stemmer,count)
+
 	
-naive_bayes()
+
+
+main()
