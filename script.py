@@ -1,34 +1,41 @@
 import nltk
+from nltk import word_tokenize
+from nltk.corpus import reuters
+
 nltk.download('reuters')
-from nltk.corpus import reuters 
- 
-def collection_stats():
-    # List of documents
-    documents = reuters.fileids()
-    print(str(len(documents)) + " documents");
- 
-    train_docs = list(filter(lambda doc: doc.startswith("train"),
-                        documents));
-    print(str(len(train_docs)) + " total train documents");
- 
-    test_docs = list(filter(lambda doc: doc.startswith("test"),
-                       documents));
-    print(str(len(test_docs)) + " total test documents");
- 
-    # List of categories
-    categories = reuters.categories();
-    print(str(len(categories)) + " categories");
- 
+nltk.download('punkt')
+
+def text_processing():
+    porter = nltk.PorterStemmer()
+    categories = ["acq","corn","crude","earn","grain","interest","money-fx","trade","veg-oil","wheat"]
+    bow = []
     # Documents in a category
-    category_docs = reuters.fileids("acq");
- 
-    # Words for a document
-    document_id = category_docs[0]
-    document_words = reuters.words(category_docs[0]);
-    print(document_words);  
- 
-    # Raw document
-    print(reuters.raw(document_id));
+    for c in categories:
+        category_docs = reuters.fileids(c)
 
+        train_docs = list(filter(lambda doc: doc.startswith("train"),
+                            category_docs)) 
+        test_docs = list(filter(lambda doc: doc.startswith("test"),
+                        category_docs))
+        
+        # training set
+        main_train = []
+        for train in train_docs:
+            raw = reuters.raw(train)
+            tokens = word_tokenize(raw)            
+            stemmer = [porter.stem(t) for t in tokens]
+            main_train += stemmer
+        
+        # test set
+        main_test = []
+        for test in test_docs:
+            raw = reuters.raw(test)
+            tokens = word_tokenize(raw)            
+            stemmer = [porter.stem(t) for t in tokens]
+            main_test += stemmer
 
-collection_stats()
+        bow.append({'categoria': c, 'treinamento': main_train, 'teste': main_test})
+        
+    return bow
+
+text_processing()
