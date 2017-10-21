@@ -38,4 +38,3 @@ def text_processing():
         
     return bow
 
-text_processing()
