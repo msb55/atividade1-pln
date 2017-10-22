@@ -8,7 +8,7 @@ nltk.download('punkt')
 def text_processing():
     porter = nltk.PorterStemmer()
     # categories = ["acq","corn","crude","earn","grain","interest","money-fx","trade","veg-oil","wheat"]
-    categories = ["corn"]
+    categories = ["wheat", "ship", "corn"]
     bow = []
     # Documents in a category
     for c in categories:
