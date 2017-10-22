@@ -2,7 +2,8 @@ import nltk
 from nltk import word_tokenize
 from nltk.corpus import reuters
 import script
-from script import text_processing
+from script import text_processing, get_quantidade_documentos
+# para numeros muito pequenos
 from decimal import *
 
 categories = ["acq","corn","crude","earn","grain","interest","money-fx","trade","ship","wheat"]
@@ -13,31 +14,47 @@ def count_words():
 	result = []	
 	for b in bow:
 		d = {}
+		# ocorrencia das palavras no BoW de treinamento 
 		for x in b["treinamento"]:
 			if x in d:
 				d[x] += 1
 			else:
 				d[x] = 1
 
-		result.append({"categoria": b["categoria"], "words": d, "qtde_tokens": len(d), "qtde": len(b["treinamento"])})
+		result.append({"categoria": b["categoria"], "words": d, "qtde_tipos": len(d), "qtde_tokens": len(b["treinamento"]), "qtde_doc": b["qtde_doc"]})
 	
+	# estrutura de retorno com a categoria, o conjunto de palavras com a ocorrencia, 
+	# 	a quantidade de tipos, a quantidade de tokens e a quantidade de documentos da categoria
 	return result
 
+# text: texto de entrada para o classificador
+# count: saida do metodo count_words()
 def naive_bayes(text,count):
 	result = []
+
+	# quantidade de documentos de todas as categorias
+	qtde_all_docs = get_quantidade_documentos()
 	for c in count:
+		# probabilidade para a categoria c
 		prob_c = 1
 		for word in text:
+			# caso ja tenha sido "visto" a palavra na categoria
 			if word in c["words"]:
-				prob_c *= Decimal(c["words"][word] + 1) / Decimal(c["qtde"] + c["qtde_tokens"])
+				# P(w | c) = (count(w,c) + 1) / ((+)count(w,c) + |V|)
+				prob_c *= Decimal(c["words"][word] + 1) / Decimal(c["qtde_tokens"] + c["qtde_tipos"])
 			else:
-				prob_c *= Decimal(1) / Decimal(c["qtde"] + c["qtde_tokens"])				
+				# suavização Add-1 para os casos da palavra não ter sido "vista" anteriormente na categoria
+				prob_c *= Decimal(1) / Decimal(c["qtde_tokens"] + c["qtde_tipos"])				
 		
-		result.append({"categoria": c["categoria"], "probabilidade": prob_c})
+		# probabilidade a priori P(c) = Nc / N
+		prob_priori = Decimal(c["qtde_doc"] / qtde_all_docs)
+		result.append({"categoria": c["categoria"], "probabilidade": (prob_priori * prob_c)})
 
+	# estrutura de retorno com o nome da categoria e a probabilidade do texto (documento) de entrada pertencer a ela
 	return result
 
-def high_class(categories_prob):
+# a maior probabilidade dentre as categorias
+def high_category(categories_prob):
 	category = ""
 	maximum = Decimal(0)
 	for c in categories_prob:
@@ -47,12 +64,15 @@ def high_class(categories_prob):
 
 	return category
 
+# estrutura base para a matriz com os valores de acertos e erros (tp, fp, tn, fn)
 def base_struct():
 	result = {}
+	# {'category_name': 0, ...}
 	for c in categories:
 		result[c] = 0
 	return result
 
+# calculo da precisão, recall e F1 para cada categoria, e a acuracia (total)
 def medidas_avaliacao(matriz):
 	somatorio_diagonal = 0
 	somatorio_total = 0
@@ -74,46 +94,39 @@ def medidas_avaliacao(matriz):
 		print("precisao: ", precisao)
 		print("F1: ", (2*recall*precisao)/(recall+precisao))	
 
-	
 	print("acurácia: ", (somatorio_diagonal/somatorio_total))
-
 
 def main():
 	count = count_words()
 	porter = nltk.PorterStemmer()
 	matriz = {}
 
-	# categories = ["grain"]
-	# categories = ["wheat", "ship", "corn"]
-
 	for c in categories:
 		category_docs = reuters.fileids(c)
+
+		# test set
 		test_docs = list(filter(lambda doc: doc.startswith("test"),category_docs))
 
 		struct = base_struct()
-		acc = 0
-		err = 0
+		
 		for t in test_docs:
 			raw = reuters.raw(t)
 			porter = nltk.PorterStemmer()
 			tokens = word_tokenize(raw)
 			stemmer = [porter.stem(t)for t in tokens]
+			# documento do conjunto de testes para o naive bayes
 			result = naive_bayes(stemmer,count)
 			
-			res = high_class(result)
-			struct[res] += 1
+			# qual a categoria com maior probabilidade
+			res = high_category(result)
 
-			if c == res:
-				acc += 1
-				# print("ACERTOU")
-			else:
-				err += 1
-				# print("ERRRRROU")
+			# contabiliza na posicao da categoria selecionada
+			struct[res] += 1
 			
+		# para a categoria c, a estrutura base contabilizada nos selecionados
 		matriz[c] = struct
-		# print(acc)
-		# print(err)
 	
+	# calcula as avaliações
 	medidas_avaliacao(matriz)
 
 main()
