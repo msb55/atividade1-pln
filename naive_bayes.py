@@ -53,6 +53,31 @@ def base_struct():
 		result[c] = 0
 	return result
 
+def medidas_avaliacao(matriz):
+	somatorio_diagonal = 0
+	somatorio_total = 0
+	for c in categories:
+		recall = matriz[c][c]
+		precisao = matriz[c][c]
+		somatorio_diagonal += matriz[c][c]
+		somatorio = 0
+		for x in categories:
+			somatorio += matriz[c][x]
+			somatorio_total += matriz[c][x]
+		recall /= somatorio
+		somatorio = 0
+		for x in categories:
+			somatorio += matriz[x][c]
+		precisao /= somatorio
+		print("classe: ",c)
+		print("recall: ", recall)
+		print("precisao: ", precisao)
+		print("F1: ", (2*recall*precisao)/(recall+precisao))	
+
+	
+	print("acurácia: ", (somatorio_diagonal/somatorio_total))
+
+
 def main():
 	count = count_words()
 	porter = nltk.PorterStemmer()
@@ -89,6 +114,6 @@ def main():
 		# print(acc)
 		# print(err)
 	
-	print(matriz)
+	medidas_avaliacao(matriz)
 
 main()
