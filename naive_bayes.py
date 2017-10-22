@@ -5,7 +5,7 @@ import script
 from script import text_processing
 from decimal import *
 
-# categories = ["acq","corn","crude","earn","grain","interest","money-fx","trade","veg-oil","wheat"]
+categories = ["acq","corn","crude","earn","grain","interest","money-fx","trade","ship","wheat"]
 
 def count_words():
 	bow = text_processing()
@@ -47,17 +47,25 @@ def high_class(categories_prob):
 
 	return category
 
+def base_struct():
+	result = {}
+	for c in categories:
+		result[c] = 0
+	return result
+
 def main():
 	count = count_words()
 	porter = nltk.PorterStemmer()
-	categories = ["corn"]
+	matriz = {}
+
+	# categories = ["grain"]
+	# categories = ["wheat", "ship", "corn"]
 
 	for c in categories:
 		category_docs = reuters.fileids(c)
 		test_docs = list(filter(lambda doc: doc.startswith("test"),category_docs))
-		
-		stemmer = []
-		main_test = []
+
+		struct = base_struct()
 		acc = 0
 		err = 0
 		for t in test_docs:
@@ -66,15 +74,21 @@ def main():
 			tokens = word_tokenize(raw)
 			stemmer = [porter.stem(t)for t in tokens]
 			result = naive_bayes(stemmer,count)
+			
+			res = high_class(result)
+			struct[res] += 1
 
-			if c == high_class(result):
+			if c == res:
 				acc += 1
-				print("ACERTOU")
+				# print("ACERTOU")
 			else:
 				err += 1
-				print("ERRRRROU")
+				# print("ERRRRROU")
 			
-		print(acc)
-		print(err)
+		matriz[c] = struct
+		# print(acc)
+		# print(err)
+	
+	print(matriz)
 
 main()
