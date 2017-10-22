@@ -5,31 +5,44 @@ from nltk.corpus import reuters
 nltk.download('reuters')
 nltk.download('punkt')
 
+# quantidade de documentos de todas as categorias (global)
+quantidade_documentos = 0
+
 def text_processing():
+    global quantidade_documentos
+    
+    # Algoritmo de Porter (Stemming)
     porter = nltk.PorterStemmer()
+
+    # As 10 categorias com mais documentos
     categories = ["acq","corn","crude","earn","grain","interest","money-fx","trade","ship","wheat"]
-    # categories = ["wheat", "ship", "corn"]
+
+    # Bag of Words
     bow = []
-    # Documents in a category
+
     for c in categories:
+        # documentos de uma categoria
         category_docs = reuters.fileids(c)
 
+        # apenas os de treinamento
         train_docs = list(filter(lambda doc: doc.startswith("train"),
                             category_docs)) 
-        
         
         # training set
         main_train = []
         for train in train_docs:
             raw = reuters.raw(train)
+            # tokemização
             tokens = word_tokenize(raw)            
             stemmer = [porter.stem(t) for t in tokens]
             main_train += stemmer
         
-        # test set
-      
+        quantidade_documentos += len(train_docs)      
 
-        bow.append({'categoria': c, 'treinamento': main_train})
+        # estrutura com o nome da categoria, BoW do set de treinamento e a quantidade de documentos
+        bow.append({'categoria': c, 'treinamento': main_train, 'qtde_doc': len(train_docs)})
         
     return bow
 
+def get_quantidade_documentos():
+    return quantidade_documentos
