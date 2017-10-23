@@ -4,6 +4,7 @@ from nltk.corpus import reuters
 
 nltk.download('reuters')
 nltk.download('punkt')
+nltk.download('wordnet')
 
 # quantidade de documentos de todas as categorias (global)
 quantidade_documentos = 0
@@ -13,6 +14,9 @@ def text_processing():
     
     # Algoritmo de Porter (Stemming)
     porter = nltk.PorterStemmer()
+
+    # Lematização
+    # wnl = nltk.WordNetLemmatizer()
 
     # As 10 categorias com mais documentos
     categories = ["acq","corn","crude","earn","grain","interest","money-fx","trade","ship","wheat"]
@@ -33,7 +37,13 @@ def text_processing():
         for train in train_docs:
             raw = reuters.raw(train)
             # tokemização
-            tokens = word_tokenize(raw)            
+            tokens = word_tokenize(raw)
+
+            # com lematização
+            # lemma = [wnl.lemmatize(t) for t in tokens]
+            # main_train += lemma
+
+            # com stemming
             stemmer = [porter.stem(t) for t in tokens]
             main_train += stemmer
         

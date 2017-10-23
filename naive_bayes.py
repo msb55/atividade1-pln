@@ -98,7 +98,13 @@ def medidas_avaliacao(matriz):
 
 def main():
 	count = count_words()
+
+	# Stemming
 	porter = nltk.PorterStemmer()
+
+	# Lematização
+	# wnl = nltk.WordNetLemmatizer()
+
 	matriz = {}
 
 	for c in categories:
@@ -113,6 +119,13 @@ def main():
 			raw = reuters.raw(t)
 			porter = nltk.PorterStemmer()
 			tokens = word_tokenize(raw)
+
+			# com lematização
+			# lemma = [wnl.lemmatize(t) for t in tokens]
+			# documento do conjunto de testes para o naive bayes
+			# result = naive_bayes(lemma,count)
+
+			# com stemming
 			stemmer = [porter.stem(t)for t in tokens]
 			# documento do conjunto de testes para o naive bayes
 			result = naive_bayes(stemmer,count)
